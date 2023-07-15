@@ -15,7 +15,7 @@ class Client(commands.Bot):
         intents.message_content = True
         intents.members = True
         intents.presences = True
-        super().__init__(command_prefix='*', intents=intents, activity=discord.Game("Type *help for help"))
+        super().__init__(command_prefix='!', intents=intents, activity=discord.Game("Type *help for help"))
         self.coglist = ["cogs.textcommands"]
 
     async def on_ready(self):

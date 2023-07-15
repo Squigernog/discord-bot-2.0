@@ -3,8 +3,8 @@
 import discord
 from discord.ext import commands
 import random
-import os
-import fnmatch
+from PIL import Image, ImageFont, ImageDraw
+from io import BytesIO
 
 eightball_responses = ["It is certain", "It is decidedly so", "Without a doubt", "Yes definitely", "You may rely on it", "As I see it, yes", "Most likely", "Outlook good",
                        "Yes", "Signs point to yes", "Reply hazy, try again", "Ask again later", "Better not tell you now", "Cannot predict now", "Concentrate and ask again",
@@ -83,10 +83,41 @@ class textcommands(commands.Cog):
         filePath = "./images/soy/still/" + number + ".png"
 
         try:
-            await ctx.send(file=discord.File(filePath))
+            # Check for and get replied message
+            reference = ctx.message.reference
+            if(reference != None):
+                msg = await ctx.fetch_message(reference.message_id)
+
+                img = Image.open(filePath)
+                font = ImageFont.truetype("arial.ttf", 48)
+
+                soyjak = Image.open(filePath)
+                speechBubble = Image.open("./images/soy/speech bubble.png")
+
+                # Concat selected soyjak & speech bubble
+                img = concatImages(speechBubble, soyjak)
+                draw = ImageDraw.Draw(img)
+
+                # Calculate text position
+                W = img.width / 5
+                H = img.height / 5
+
+                draw.text((W, H), msg.content, (255,255,255), font=font)
+                bytes = BytesIO()
+                img.save(bytes, format="PNG")
+                bytes.seek(0)
+
+                await ctx.send(file=discord.File(bytes, filename="img.png"))
+            else:
+                await ctx.send("soy", file=discord.File(filePath))
         except FileNotFoundError:
             await ctx.send("Invalid selection")
 
-        
+def concatImages(im1, im2, resample=Image.BICUBIC, resize_big_image=True, color=(54,57,62)):
+    dst = Image.new('RGB', (max(im1.width, im2.width), im1.height + im2.height), color)
+    dst.paste(im1, (0, 0))
+    dst.paste(im2, (0, im1.height))
+    return dst
+
 async def setup(client:commands.Bot) -> None:
     await client.add_cog(textcommands(client))
