@@ -2,8 +2,9 @@
 
 import discord
 from discord.ext import commands
-from discord import app_commands
 import random
+import os
+import fnmatch
 
 eightball_responses = ["It is certain", "It is decidedly so", "Without a doubt", "Yes definitely", "You may rely on it", "As I see it, yes", "Most likely", "Outlook good",
                        "Yes", "Signs point to yes", "Reply hazy, try again", "Ask again later", "Better not tell you now", "Cannot predict now", "Concentrate and ask again",
@@ -72,6 +73,19 @@ class textcommands(commands.Cog):
             result += random.randint(1, type)
         
         await ctx.reply(str(result))
+
+    @commands.command(name="soy", description="Depict your enemies with a soyjak. Select between numbers 1 and 42.")
+    async def soy(self, ctx, number : str = None):
+        # Verify selection
+        if(number == None): # random file if no selection
+            number = str(random.randint(1, 42))
+        
+        filePath = "./images/soy/still/" + number + ".png"
+
+        try:
+            await ctx.send(file=discord.File(filePath))
+        except FileNotFoundError:
+            await ctx.send("Invalid selection")
 
         
 async def setup(client:commands.Bot) -> None:
