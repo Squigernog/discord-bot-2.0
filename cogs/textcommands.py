@@ -16,6 +16,7 @@ class textcommands(commands.Cog):
     def __init__(self, client: commands.Bot):
         self.client = client
 
+    #-------------------------- PFP Command ------------------------#
     @commands.command(name="pfp", description="Display the profile picture of a user")
     async def pfp(self, ctx, member:discord.Member=None):
         # Check if member mentioned
@@ -25,6 +26,7 @@ class textcommands(commands.Cog):
         embed.set_thumbnail(url=member.avatar.url)
         await ctx.send(embed=embed)
 
+    #-------------------------- 8ball Command ------------------------#
     @commands.command(name="8ball", description="Consult the 8 ball on your present or future")
     async def eightball(self, ctx):
         # Check if question asked
@@ -34,6 +36,7 @@ class textcommands(commands.Cog):
             selection = random.randint(0, 20)
             await ctx.reply(eightball_responses[selection])
 
+    #-------------------------- Joint Command ------------------------#
     @commands.command(name="joint", description="Pass a user the virtual joint. If no user mentioned, send to random user.")
     async def joint(self, ctx, member:discord.Member=None):
         # grab file
@@ -50,6 +53,7 @@ class textcommands(commands.Cog):
         member = "<@" + str(member.id) + ">"
         await ctx.send(content=member, file=discord.File(filePath))
 
+    #-------------------------- Bonk Command ------------------------#
     @commands.command(name="bonk", description="Bonk a user")
     async def bonk(self, ctx, member:discord.Member=None):
         # grab file
@@ -63,6 +67,7 @@ class textcommands(commands.Cog):
         else:
             await ctx.send("You bonked " + str(member), file=discord.File(filePath))
 
+    #-------------------------- Roll Command ------------------------#
     @commands.command(name="roll", description="Roll x amount of y sided dice. Format: xdy")
     async def roll(self, ctx, roll : str):
         num, type = roll.split('d')
@@ -74,6 +79,7 @@ class textcommands(commands.Cog):
         
         await ctx.reply(str(result))
 
+    #-------------------------- Soy Command ------------------------#
     @commands.command(name="soy", description="Depict your enemies with a soyjak. Select between numbers 1 and 42.")
     async def soy(self, ctx, number : str = None):
         # Verify selection
@@ -89,7 +95,7 @@ class textcommands(commands.Cog):
                 msg = await ctx.fetch_message(reference.message_id)
 
                 img = Image.open(filePath)
-                font = ImageFont.truetype("arial.ttf", 48)
+                font = ImageFont.truetype("arial.ttf", 60)
 
                 soyjak = Image.open(filePath)
                 speechBubble = Image.open("./images/soy/speech bubble.png")
@@ -99,10 +105,17 @@ class textcommands(commands.Cog):
                 draw = ImageDraw.Draw(img)
 
                 # Calculate text position
-                W = img.width / 5
-                H = img.height / 5
+                W = img.width / 2
+                H = img.height / 4
 
-                draw.text((W, H), msg.content, (255,255,255), font=font)
+                # add return line ever 25 characters
+                i = 0
+                for c in msg:
+                    if i % 25 == 0:
+                        msg = msg[:i] + "/n" + msg[i:]
+                    i += 1
+
+                draw.text((W, H), msg.content, (255,255,255), font=font, align="center", anchor="mm")
                 bytes = BytesIO()
                 img.save(bytes, format="PNG")
                 bytes.seek(0)
@@ -113,8 +126,8 @@ class textcommands(commands.Cog):
         except FileNotFoundError:
             await ctx.send("Invalid selection")
 
-def concatImages(im1, im2, resample=Image.BICUBIC, resize_big_image=True, color=(54,57,62)):
-    dst = Image.new('RGB', (max(im1.width, im2.width), im1.height + im2.height), color)
+def concatImages(im1, im2):
+    dst = Image.new('RGB', (im1.width, im1.height + im2.height))
     dst.paste(im1, (0, 0))
     dst.paste(im2, (0, im1.height))
     return dst
