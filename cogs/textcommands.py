@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands
 import random
 from PIL import Image, ImageFont, ImageDraw
+import textwrap
 from io import BytesIO
 
 eightball_responses = ["It is certain", "It is decidedly so", "Without a doubt", "Yes definitely", "You may rely on it", "As I see it, yes", "Most likely", "Outlook good",
@@ -82,6 +83,7 @@ class textcommands(commands.Cog):
     #-------------------------- Soy Command ------------------------#
     @commands.command(name="soy", description="Depict your enemies with a soyjak. Select between numbers 1 and 42.")
     async def soy(self, ctx, number : str = None):
+        print('entered command')
         # Verify selection
         if(number == None): # random file if no selection
             number = str(random.randint(1, 42))
@@ -91,6 +93,7 @@ class textcommands(commands.Cog):
         try:
             # Check for and get replied message
             reference = ctx.message.reference
+            print("checking reference")
             if(reference != None):
                 msg = await ctx.fetch_message(reference.message_id)
 
@@ -106,23 +109,24 @@ class textcommands(commands.Cog):
 
                 # Calculate text position
                 W = img.width / 2
-                H = img.height / 4
+                H = img.height / 5
 
-                # add return line ever 25 characters
-                i = 0
-                for c in msg:
-                    if i % 25 == 0:
-                        msg = msg[:i] + "/n" + msg[i:]
-                    i += 1
-
-                draw.text((W, H), msg.content, (255,255,255), font=font, align="center", anchor="mm")
+                # add return line ever 24 characters
+                lines = textwrap.wrap(msg.content, width=24)
+                y_text = H
+                for line in lines:
+                        draw.text((W, y_text), line, (255,255,255), font=font, align="center", anchor="mm")
+                        y_text += 50
+                
                 bytes = BytesIO()
                 img.save(bytes, format="PNG")
                 bytes.seek(0)
 
                 await ctx.send(file=discord.File(bytes, filename="img.png"))
+            # Check for attachment
+                
             else:
-                await ctx.send("soy", file=discord.File(filePath))
+                await ctx.send("", file=discord.File(filePath))
         except FileNotFoundError:
             await ctx.send("Invalid selection")
 
