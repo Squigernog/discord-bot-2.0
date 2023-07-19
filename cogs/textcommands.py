@@ -6,6 +6,7 @@ import random
 from PIL import Image, ImageFont, ImageDraw
 import textwrap
 from io import BytesIO
+import requests
 
 eightball_responses = ["It is certain", "It is decidedly so", "Without a doubt", "Yes definitely", "You may rely on it", "As I see it, yes", "Most likely", "Outlook good",
                        "Yes", "Signs point to yes", "Reply hazy, try again", "Ask again later", "Better not tell you now", "Cannot predict now", "Concentrate and ask again",
@@ -81,9 +82,8 @@ class textcommands(commands.Cog):
         await ctx.reply(str(result))
 
     #-------------------------- Soy Command ------------------------#
-    @commands.command(name="soy", description="Depict your enemies with a soyjak. Select between numbers 1 and 42.")
+    @commands.command(name="soy", description="Depict your enemies with a soyjak. Select between numbers 1 and 42. Reply to a message when using command to add text or iamge.")
     async def soy(self, ctx, number : str = None):
-        print('entered command')
         # Verify selection
         if(number == None): # random file if no selection
             number = str(random.randint(1, 42))
@@ -93,40 +93,55 @@ class textcommands(commands.Cog):
         try:
             # Check for and get replied message
             reference = ctx.message.reference
-            print("checking reference")
             if(reference != None):
+                # Get referenced message
                 msg = await ctx.fetch_message(reference.message_id)
-
-                img = Image.open(filePath)
+                
+                # Get font
                 font = ImageFont.truetype("arial.ttf", 60)
 
+                # Grab images
                 soyjak = Image.open(filePath)
                 speechBubble = Image.open("./images/soy/speech bubble.png")
+
+                # Get center point of speech bubble
+                W = speechBubble.width / 2
+                H = speechBubble.height / 2
 
                 # Concat selected soyjak & speech bubble
                 img = concatImages(speechBubble, soyjak)
                 draw = ImageDraw.Draw(img)
-
-                # Calculate text position
-                W = img.width / 2
-                H = img.height / 5
-
-                # add return line ever 24 characters
-                lines = textwrap.wrap(msg.content, width=24)
-                y_text = H
-                for line in lines:
-                        draw.text((W, y_text), line, (255,255,255), font=font, align="center", anchor="mm")
-                        y_text += 50
                 
+                # Check for attachment
+                if(msg.attachments != None and (msg.attachments[0].content_type in ('image/jpeg', 'image/jpg', 'image/png'))):\
+                    # Resize and add to image
+                    ref_img = msg.attachments[0]
+                    with Image.open(requests.get(ref_img.url, stream=True).raw) as im:
+                        width, height = im.size
+                        ref_img_resize = im.resize((int(width/3), int(height/3)))
+                        
+                        # Calculate image offset
+                        x_offset = ref_img_resize.width / 2
+                        y_offset = ref_img_resize.height / 2
+                        
+                        img.paste(ref_img_resize, (int(W - x_offset), int(H - y_offset)))
+                else:
+                    # New line ever 24 characters
+                    lines = textwrap.wrap(msg.content, width=24)
+                    y_text = H
+                    for line in lines:
+                            draw.text((W, y_text), line, (255,255,255), font=font, align="center", anchor="mm")
+                            y_text += 50
+                    
                 bytes = BytesIO()
                 img.save(bytes, format="PNG")
                 bytes.seek(0)
 
                 await ctx.send(file=discord.File(bytes, filename="img.png"))
-            # Check for attachment
-                
+            # Send only soyjak if no referenced message
             else:
                 await ctx.send("", file=discord.File(filePath))
+        # If selected value does not exist
         except FileNotFoundError:
             await ctx.send("Invalid selection")
 
