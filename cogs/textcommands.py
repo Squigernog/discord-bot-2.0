@@ -113,7 +113,7 @@ class textcommands(commands.Cog):
                 draw = ImageDraw.Draw(img)
                 
                 # Check for attachment
-                if(msg.attachments != None and (msg.attachments[0].content_type in ('image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'))):
+                if(len(msg.attachments) != 0 and (msg.attachments[0].content_type in ('image/jpeg', 'image/jpg', 'image/png'))):
                     # Resize and add to image
                     ref_img = msg.attachments[0]
                     with Image.open(requests.get(ref_img.url, stream=True).raw) as im:
@@ -121,11 +121,11 @@ class textcommands(commands.Cog):
                         """w = int(speechBubble.width * 0.7)
                         h = int(speechBubble.height * 0.7)
                         ref_img_resize = im.resize([w, h])"""
-                        
+                            
                         # Calculate image offset
                         x_offset = ref_img_resize.width / 2
                         y_offset = ref_img_resize.height / 2
-                        
+                            
                         img.paste(ref_img_resize, (int(W - x_offset), int(H - y_offset)))
                 else:
                     # New line ever 24 characters
