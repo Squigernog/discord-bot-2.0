@@ -54,6 +54,19 @@ class textcommands(commands.Cog):
 
         member = "<@" + str(member.id) + ">"
         await ctx.send(content=member, file=discord.File(filePath))
+    
+    #-------------------------- Is Gay Command ------------------------#
+    @commands.command(name="isgay", description="Determines who in the server is gay")
+    async def isGay(self, ctx):
+        member = ""
+        while True:
+            member = random.choice(ctx.message.channel.guild.members)
+            if not member.bot:
+                break
+
+        message = "<@" + str(member.id) + "> is gay"
+
+        await ctx.send(content=message)
 
     #-------------------------- Bonk Command ------------------------#
     @commands.command(name="bonk", description="Bonk a user")
@@ -113,20 +126,23 @@ class textcommands(commands.Cog):
                 draw = ImageDraw.Draw(img)
                 
                 # Check for attachment
-                if(len(msg.attachments) != 0 and (msg.attachments[0].content_type in ('image/jpeg', 'image/jpg', 'image/png'))):
-                    # Resize and add to image
-                    ref_img = msg.attachments[0]
-                    with Image.open(requests.get(ref_img.url, stream=True).raw) as im:
-                        ref_img_resize = resizeImage(im, speechBubble.width, speechBubble.height)
-                        """w = int(speechBubble.width * 0.7)
-                        h = int(speechBubble.height * 0.7)
-                        ref_img_resize = im.resize([w, h])"""
-                            
-                        # Calculate image offset
-                        x_offset = ref_img_resize.width / 2
-                        y_offset = ref_img_resize.height / 2
-                            
-                        img.paste(ref_img_resize, (int(W - x_offset), int(H - y_offset)))
+                if(len(msg.attachments) != 0):
+                    if(msg.attachments[0].content_type in ('image/jpeg', 'image/jpg', 'image/png', 'image/webp')):
+                        # Resize and add to image
+                        ref_img = msg.attachments[0]
+                        with Image.open(requests.get(ref_img.url, stream=True).raw) as im:
+                            ref_img_resize = resizeImage(im, speechBubble.width, speechBubble.height)
+                            """w = int(speechBubble.width * 0.7)
+                            h = int(speechBubble.height * 0.7)
+                            ref_img_resize = im.resize([w, h])"""
+                                
+                            # Calculate image offset
+                            x_offset = ref_img_resize.width / 2
+                            y_offset = ref_img_resize.height / 2
+                                
+                            img.paste(ref_img_resize, (int(W - x_offset), int(H - y_offset)))
+                    #elif(msg.attachments[0].content_type in ('image/gif')):
+                        
                 else:
                     # New line ever 24 characters
                     lines = textwrap.wrap(msg.content, width=24)
