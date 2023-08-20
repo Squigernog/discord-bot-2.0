@@ -7,10 +7,12 @@ from PIL import Image, ImageFont, ImageDraw
 import textwrap
 from io import BytesIO
 import requests
+import json
 
 eightball_responses = ["It is certain", "It is decidedly so", "Without a doubt", "Yes definitely", "You may rely on it", "As I see it, yes", "Most likely", "Outlook good",
                        "Yes", "Signs point to yes", "Reply hazy, try again", "Ask again later", "Better not tell you now", "Cannot predict now", "Concentrate and ask again",
                        "Don't count on it", "My reply is no", "My sources say no", "Outlook not so good", "Very doubtful"]
+yomama_categories = ["fat", "stupid", "ugly", "nasty", "hairy", "bald", "old", "poor", "short", "skinny", "tall", "like"]
 
 class textcommands(commands.Cog):
 
@@ -80,7 +82,7 @@ class textcommands(commands.Cog):
             member = ctx.message.author
             await ctx.reply("You bonked yourself!", file=discord.File(filePath))
         else:
-            await ctx.send("You bonked " + str(member), file=discord.File(filePath))
+            await ctx.send("You bonked <@" + str(member.id) + ">", file=discord.File(filePath))
 
     #-------------------------- Roll Command ------------------------#
     @commands.command(name="roll", description="Roll x amount of y sided dice. Format: xdy")
@@ -162,6 +164,30 @@ class textcommands(commands.Cog):
         # If selected value does not exist
         except FileNotFoundError:
             await ctx.send("Invalid selection")
+
+    #-------------------------- Yo Mama Command ------------------------#
+    @commands.command(name="yomama", description="Give a \"yo mama\" insult")
+    async def yomama(self, ctx, member : discord.Member = None):
+        file = open('yomama.json', encoding="utf-8")
+
+        data = json.load(file)
+
+        # Select random array from json file
+        rand_cat = random.randint(0, 11)
+        cat = yomama_categories[rand_cat]
+        yomama_cat = data[cat]
+
+        # Get random entry of array selected
+        size = len(yomama_cat)
+        rand_joke = random.randint(0, size)
+        joke = str(yomama_cat[rand_joke])
+
+        # if member specified
+        if member != None:
+            joke = "<@" + str(member.id) + "> " + joke
+
+        await ctx.send(joke)
+
 
 def concatImages(im1, im2):
     """
