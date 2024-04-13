@@ -167,13 +167,13 @@ class textcommands(commands.Cog):
 
             #-------------------------- Chud Command ------------------------#
     @commands.command(name="chud", description="Depict your enemies with a chudjak. Select between numbers 1 and 42. Reply to a message when using command to add text or iamge.")
-    async def soy(self, ctx):
+    async def chud(self, ctx):
         # reimplement when I get more chud images
         # Verify selection
         #if(number == None): # random file if no selection
         #    number = str(random.randint(1, 42))
         
-        filePath = "./images/chud/still/1.png"
+        filePath = "./images/chud/1.png"
 
         try:
             # Check for and get replied message
